@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFi Configuration - 3D Printer Control Panel</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Basic reset and layout */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar styles */
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px 0;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+        
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #34495e;
+            margin-bottom: 20px;
+        }
+        
+        .logo h2 {
+            color: #3498db;
+            font-size: 1.5rem;
+        }
+        
+        .nav-links {
+            list-style: none;
+        }
+        
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-links li a:hover,
+        .nav-links li a.active {
+            background: #34495e;
+            color: #fff;
+        }
+        
+        .nav-links li a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Main content */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+            background: #fff;
+            min-height: 100vh;
+        }
+        
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+        
+        /* Form styles */
+        .config-section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input[type="text"]:focus,
+        .form-group input[type="password"]:focus,
+        .form-group select:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .password-input {
+            position: relative;
+        }
+        
+        .password-input input {
+            padding-right: 40px;
+        }
+        
+        .btn-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+        }
+        
+        .btn-icon:hover {
+            color: #3498db;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        /* Network list */
+        .network-list {
+            margin-top: 30px;
+        }
+        
+        .network-list h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .network-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .network-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .network-info h3 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .network-signal {
+            font-size: 14px;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .network-security {
+            font-size: 12px;
+            background: #e9ecef;
+            color: #6c757d;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+        
+        .network-list .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background-color: #28a745;
+        }
+        
+        .notification.error {
+            background-color: #dc3545;
+        }
+        
+        .notification.warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .notification.info {
+            background-color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h2>3D Control</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html" id="nav-home">
+                    <i class="fas fa-home"></i> Home
+                </a></li>
+                <li><a href="bluetooth.html" id="nav-bluetooth">
+                    <i class="fas fa-bluetooth"></i> Bluetooth
+                </a></li>
+                <li><a href="wifi.html" id="nav-wifi" class="active">
+                    <i class="fas fa-wifi"></i> WiFi
+                </a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-container">
+                <h1><i class="fas fa-wifi"></i> WiFi Configuration</h1>
+                
+                <div class="config-section">
+                    <form id="wifiForm">
+                        <div class="form-group">
+                            <label for="ssid">Network Name (SSID)</label>
+                            <input type="text" id="ssid" name="ssid" placeholder="Enter network name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <div class="password-input">
+                                <input type="password" id="password" name="password" placeholder="Enter password">
+                                <button type="button" class="btn-icon" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="security">Security Type</label>
+                            <select id="security" name="security" required>
+                                <option value="WPA2">WPA2-Personal (Recommended)</option>
+                                <option value="WPA3">WPA3-Personal</option>
+                                <option value="WPA2-Enterprise">WPA2-Enterprise</option>
+                                <option value="WEP">WEP</option>
+                                <option value="None">None (Open Network)</option>
+                            </select>
+                        </div>
+            
+                        <div id="enterpriseFields" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                            <h3>Enterprise Settings</h3>
+                            <div class="form-group">
+                                <label for="identity">Identity</label>
+                                <input type="text" id="identity" name="identity" placeholder="Enter identity">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="anonymousIdentity">Anonymous Identity (optional)</label>
+                                <input type="text" id="anonymousIdentity" name="anonymousIdentity" placeholder="Enter anonymous identity">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="eapMethod">EAP Method</label>
+                                <select id="eapMethod" name="eapMethod">
+                                    <option value="PEAP">PEAP</option>
+                                    <option value="TLS">TLS</option>
+                                    <option value="TTLS">TTLS</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="phase2">Phase 2 Authentication</label>
+                                <select id="phase2" name="phase2">
+                                    <option value="">None</option>
+                                    <option value="MSCHAPV2">MSCHAPV2</option>
+                                    <option value="GTC">GTC</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="caCert">CA Certificate (PEM format)</label>
+                                <textarea id="caCert" name="caCert" rows="4" placeholder="Paste CA certificate here"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="clientCert">Client Certificate (PEM format, optional)</label>
+                                <textarea id="clientCert" name="clientCert" rows="4" placeholder="Paste client certificate here"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="privateKey">Private Key (PEM format, optional)</label>
+                                <textarea id="privateKey" name="privateKey" rows="4" placeholder="Paste private key here"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="privateKeyPassword">Private Key Password (if any)</label>
+                                <input type="password" id="privateKeyPassword" name="privateKeyPassword" placeholder="Enter private key password">
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="scanWifiBtn">
+                                <i class="fas fa-search"></i> Scan for Networks
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Configuration
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="network-list">
+                        <h2><i class="fas fa-wifi"></i> Available Networks</h2>
+                        <div class="loading" id="loadingNetworks">Click "Scan for Networks" to find available WiFi networks</div>
+                        <div id="networks"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div id="notification" class="notification"></div>
+    
+    <script>
+        // Highlight active navigation link
+        document.addEventListener('DOMContentLoaded', function() {
+            const path = window.location.pathname.split('/').pop() || 'index.html';
+            const navLinks = {
+                'index.html': 'nav-home',
+                'bluetooth.html': 'nav-bluetooth',
+                'wifi.html': 'nav-wifi'
+            };
+            
+            // Remove active class from all links
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Add active class to current link
+            const currentLink = navLinks[path];
+            if (currentLink) {
+                document.getElementById(currentLink).classList.add('active');
+            }
+            
+            // Toggle password visibility
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            
+            if (togglePassword && passwordInput) {
+                togglePassword.addEventListener('click', function() {
+                    const type = passwordInput.type === 'password' ? 'text' : 'password';
+                    passwordInput.type = type;
+                    this.innerHTML = type === 'password' ? 
+                        '<i class="fas fa-eye"></i>' : 
+                        '<i class="fas fa-eye-slash"></i>';
+                });
+            }
+            
+            // Toggle enterprise fields based on security type
+            const securitySelect = document.getElementById('security');
+            const enterpriseFields = document.getElementById('enterpriseFields');
+            
+            if (securitySelect && enterpriseFields) {
+                securitySelect.addEventListener('change', function() {
+                    const isEnterprise = this.value === 'WPA2-Enterprise' || this.value === 'WPA3-Enterprise';
+                    enterpriseFields.style.display = isEnterprise ? 'block' : 'none';
+                });
+            }
+            
+            // Handle form submission
+            const form = document.getElementById('wifiForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Get form data
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+                    
+                    // In a real app, you would send this data to your server
+                    console.log('Submitting WiFi configuration:', data);
+                    
+                    // Show success message
+                    showNotification('WiFi configuration saved successfully!', 'success');
+                    
+                    // Reset form
+                    form.reset();
+                });
+            }
+            
+            // Handle network scanning
+            const scanBtn = document.getElementById('scanWifiBtn');
+            const loadingEl = document.getElementById('loadingNetworks');
+            const networksEl = document.getElementById('networks');
+            
+            if (scanBtn && loadingEl && networksEl) {
+                scanBtn.addEventListener('click', function() {
+                    // In a real app, this would make an API call to scan for networks
+                    loadingEl.style.display = 'block';
+                    loadingEl.textContent = 'Scanning for networks...';
+                    networksEl.innerHTML = '';
+                    
+                    // Simulate network scanning with a timeout
+                    setTimeout(() => {
+                        // Sample network data
+                        const networks = [
+                            { ssid: 'HomeWiFi', signal: 90, security: 'WPA2' },
+                            { ssid: 'OfficeWiFi', signal: 75, security: 'WPA2-Enterprise' },
+                            { ssid: 'GuestWiFi', signal: 60, security: 'WPA3' },
+                            { ssid: 'CoffeeShop', signal: 45, security: 'None' },
+                            { ssid: 'NeighborWiFi', signal: 30, security: 'WPA2' }
+                        ];
+                        
+                        // Display networks
+                        displayNetworks(networks);
+                    }, 2000);
+                });
+            }
+            
+            // Function to display networks
+            function displayNetworks(networks) {
+                const loadingEl = document.getElementById('loadingNetworks');
+                const networksEl = document.getElementById('networks');
+                
+                if (!networks || networks.length === 0) {
+                    loadingEl.textContent = 'No networks found.';
+                    return;
+                }
+                
+                loadingEl.style.display = 'none';
+                networksEl.innerHTML = '';
+                
+                networks.forEach(network => {
+                    const networkItem = document.createElement('div');
+                    networkItem.className = 'network-item';
+                    networkItem.innerHTML = `
+                        <div class="network-info">
+                            <h3>
+                                ${network.ssid}
+                                <span class="network-security">${network.security || 'Open'}</span>
+                            </h3>
+                            <div class="network-signal">
+                                <i class="fas fa-wifi"></i>
+                                <span>${network.signal}% signal</span>
+                            </div>
+                        </div>
+                        <div class="network-actions">
+                            <button class="btn btn-sm" onclick="selectNetwork('${network.ssid}', '${network.security || 'None'}')">
+                                <i class="fas fa-plug"></i> Connect
+                            </button>
+                        </div>
+                    `;
+                    networksEl.appendChild(networkItem);
+                });
+            }
+            
+            // Function to show notification
+            function showNotification(message, type = 'info') {
+                const notification = document.getElementById('notification');
+                if (!notification) return;
+                
+                notification.textContent = message;
+                notification.className = `notification ${type} show`;
+                
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 5000);
+            }
+        });
+        
+        // Global function to select a network
+        function selectNetwork(ssid, security) {
+            const ssidInput = document.getElementById('ssid');
+            const securitySelect = document.getElementById('security');
+            
+            if (ssidInput) ssidInput.value = ssid;
+            if (securitySelect) {
+                // Try to find a matching security option
+                const options = securitySelect.options;
+                for (let i = 0; i < options.length; i++) {
+                    if (options[i].value === security) {
+                        securitySelect.selectedIndex = i;
+                        break;
+                    }
+                }
+                
+                // Trigger change event to show/hide enterprise fields
+                securitySelect.dispatchEvent(new Event('change'));
+            }
+            
+            // Scroll to the form
+            document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
+            
+            // Focus on the password field
+            const passwordInput = document.getElementById('password');
+            if (passwordInput) passwordInput.focus();
+        }
+    </script>
+</body>
+</html>
+                    <label for="identity">Identity</label>
+                    <input type="text" id="identity" name="identity" placeholder="Enter identity">
+                </div>
+                
+                <div class="form-group">
+                    <label for="eapMethod">EAP Method</label>
+                    <select id="eapMethod" name="eapMethod">
+                        <option value="PEAP">PEAP</option>
+                        <option value="TLS">TLS</option>
+                        <option value="TTLS">TTLS</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="scanWifiBtn">
+                    <i class="fas fa-wifi"></i> Scan Networks
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Configuration
+                </button>
+            </div>
+        </form>
+        
+        <div class="network-list" id="networkList">
+            <h3>Available Networks</h3>
+            <div class="loading" id="loadingNetworks">Scanning for networks...</div>
+            <div id="networks"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('wifiForm');
+    const scanBtn = document.getElementById('scanWifiBtn');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const securitySelect = document.getElementById('security');
+    const enterpriseFields = document.getElementById('enterpriseFields');
+    const loadingEl = document.getElementById('loadingNetworks');
+    const networksEl = document.getElementById('networks');
+    
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.type === 'password' ? 'text' : 'password';
+        passwordInput.type = type;
+        this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    });
+    
+    // Toggle enterprise fields based on security type
+    securitySelect.addEventListener('change', function() {
+        enterpriseFields.style.display = this.value === 'WPA2-Enterprise' ? 'block' : 'none';
+    });
+    
+    // Load saved configuration
+    fetch('/api/device/config')
+        .then(response => response.json())
+        .then(config => {
+            if (config.wifi) {
+                document.getElementById('ssid').value = config.wifi.ssid || '';
+                document.getElementById('password').value = config.wifi.password || '';
+                
+                if (config.wifi.security) {
+                    const security = config.wifi.security;
+                    document.getElementById('security').value = security;
+                    
+                    if (security === 'WPA2-Enterprise') {
+                        enterpriseFields.style.display = 'block';
+                        document.getElementById('identity').value = config.wifi.identity || '';
+                        document.getElementById('eapMethod').value = config.wifi.eapMethod || 'PEAP';
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading WiFi config:', error);
+            showNotification('Failed to load WiFi configuration', 'error');
+        });
+    
+    // Handle form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const security = document.getElementById('security').value;
+        const formData = {
+            type: 'wifi',
+            data: {
+                ssid: document.getElementById('ssid').value,
+                password: document.getElementById('password').value,
+                security: security,
+                ...(security === 'WPA2-Enterprise' && {
+                    identity: document.getElementById('identity').value || '',
+                    eapMethod: document.getElementById('eapMethod').value
+                }),
+                lastUpdated: new Date().toISOString()
+            }
+        };
+        
+        fetch('/api/device/config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            showNotification('WiFi configuration saved successfully!', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Failed to save WiFi configuration', 'error');
+        });
+    });
+    
+    // Handle scan button click
+    scanBtn.addEventListener('click', function() {
+        // In a real app, this would use the Web WiFi API or make an API call to the backend
+        loadingEl.style.display = 'block';
+        loadingEl.textContent = 'Scanning for networks...';
+        networksEl.innerHTML = '';
+        
+        // Simulate scanning delay
+        setTimeout(() => {
+            loadingEl.style.display = 'none';
+            
+            // Mock networks - in a real app, these would come from an API
+            const mockNetworks = [
+                { ssid: 'HomeWiFi', security: 'WPA2', signal: 90 },
+                { ssid: 'Office', security: 'WPA2-Enterprise', signal: 75 },
+                { ssid: 'Guest', security: 'None', signal: 60 },
+                { ssid: 'Neighbor', security: 'WPA2', signal: 40 },
+                { ssid: 'Cafe', security: 'None', signal: 30 }
+            ];
+            
+            if (mockNetworks.length === 0) {
+                networksEl.innerHTML = '<div class="empty">No networks found</div>';
+                return;
+            }
+            
+            mockNetworks.forEach(network => {
+                const networkEl = document.createElement('div');
+                networkEl.className = 'network-item';
+                
+                // Calculate signal strength icon
+                let signalIcon = 'fa-wifi';
+                let signalClass = 'strong';
+                
+                if (network.signal < 30) {
+                    signalIcon = 'fa-wifi-1';
+                    signalClass = 'weak';
+                } else if (network.signal < 70) {
+                    signalIcon = 'fa-wifi-2';
+                    signalClass = 'medium';
+                }
+                
+                networkEl.innerHTML = `
+                    <div class="network-info">
+                        <i class="fas ${signalIcon} ${signalClass}"></i>
+                        <div>
+                            <div class="network-name">${network.ssid}</div>
+                            <div class="network-security">${network.security}</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm" onclick="selectNetwork('${network.ssid}', '${network.security}')">
+                        Connect
+                    </button>
+                `;
+                networksEl.appendChild(networkEl);
+            });
+        }, 1500);
+    });
+});
+
+// Global function to be called from inline onclick
+function selectNetwork(ssid, security) {
+    document.getElementById('ssid').value = ssid;
+    document.getElementById('security').value = security;
+    document.getElementById('ssid').focus();
+    
+    // If it's an open network, clear the password
+    if (security === 'None') {
+        document.getElementById('password').value = '';
+    }
+    
+    // Show/hide enterprise fields based on security type
+    document.getElementById('enterpriseFields').style.display = 
+        security === 'WPA2-Enterprise' ? 'block' : 'none';
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Trigger reflow
+    void notification.offsetWidth;
+    
+    notification.classList.add('show');
+    
+    // Auto-remove notification after delay
+    setTimeout(() => {
+        notification.classList.remove('show');
+        
+        // Remove from DOM after animation
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
+}
+</script>

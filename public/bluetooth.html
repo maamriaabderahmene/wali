@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluetooth Configuration - 3D Printer Control Panel</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Basic reset and layout */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar styles */
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px 0;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+        
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #34495e;
+            margin-bottom: 20px;
+        }
+        
+        .logo h2 {
+            color: #3498db;
+            font-size: 1.5rem;
+        }
+        
+        .nav-links {
+            list-style: none;
+        }
+        
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-links li a:hover,
+        .nav-links li a.active {
+            background: #34495e;
+            color: #fff;
+        }
+        
+        .nav-links li a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Main content */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+            background: #fff;
+            min-height: 100vh;
+        }
+        
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+        
+        /* Form styles */
+        .config-section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input[type="text"]:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        /* Device list */
+        .device-list {
+            margin-top: 30px;
+        }
+        
+        .device-list h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .device-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .device-info h3 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+        }
+        
+        .device-address {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .device-actions button {
+            margin-left: 10px;
+        }
+        
+        .device-list .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background-color: #28a745;
+        }
+        
+        .notification.error {
+            background-color: #dc3545;
+        }
+        
+        .notification.warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .notification.info {
+            background-color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h2>3D Control</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html" id="nav-home">
+                    <i class="fas fa-home"></i> Home
+                </a></li>
+                <li><a href="bluetooth.html" id="nav-bluetooth" class="active">
+                    <i class="fas fa-bluetooth"></i> Bluetooth
+                </a></li>
+                <li><a href="wifi.html" id="nav-wifi">
+                    <i class="fas fa-wifi"></i> WiFi
+                </a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-container">
+                <h1><i class="fas fa-bluetooth"></i> Bluetooth Configuration</h1>
+                
+                <div class="config-section">
+                    <form id="bluetoothForm">
+                        <div class="form-group">
+                            <label for="deviceName">Device Name</label>
+                            <input type="text" id="deviceName" name="deviceName" placeholder="Enter device name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="deviceAddress">MAC Address</label>
+                            <input type="text" id="deviceAddress" name="deviceAddress" placeholder="00:11:22:33:44:55" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pinCode">PIN Code (if required)</label>
+                            <input type="text" id="pinCode" name="pinCode" placeholder="0000">
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="scanBtn">
+                                <i class="fas fa-search"></i> Scan for Devices
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Configuration
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="device-list" id="deviceList">
+            <h3>Available Devices</h3>
+            <div class="loading" id="loadingDevices">Scanning for devices...</div>
+            <div id="devices"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('bluetoothForm');
+    const scanBtn = document.getElementById('scanBtn');
+    const loadingEl = document.getElementById('loadingDevices');
+    const devicesEl = document.getElementById('devices');
+    
+    // Load saved configuration
+    fetch('/api/device/config')
+        .then(response => response.json())
+        .then(config => {
+            if (config.bluetooth) {
+                document.getElementById('deviceName').value = config.bluetooth.deviceName || '';
+                document.getElementById('deviceAddress').value = config.bluetooth.deviceAddress || '';
+                document.getElementById('pinCode').value = config.bluetooth.pinCode || '';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading config:', error);
+            showNotification('Failed to load Bluetooth configuration', 'error');
+        });
+    
+    // Handle form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            type: 'bluetooth',
+            data: {
+                deviceName: document.getElementById('deviceName').value,
+                deviceAddress: document.getElementById('deviceAddress').value,
+                pinCode: document.getElementById('pinCode').value,
+                lastUpdated: new Date().toISOString()
+            }
+        };
+        
+        fetch('/api/device/config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            showNotification('Bluetooth configuration saved successfully!', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Failed to save Bluetooth configuration', 'error');
+        });
+    });
+    
+    // Handle scan button click
+    scanBtn.addEventListener('click', function() {
+        // In a real app, this would use the Web Bluetooth API
+        // For demo purposes, we'll simulate finding devices
+        loadingEl.style.display = 'block';
+        loadingEl.textContent = 'Scanning for devices...';
+        devicesEl.innerHTML = '';
+        
+        // Simulate scanning delay
+        setTimeout(() => {
+            loadingEl.style.display = 'none';
+            
+            // Mock devices - in a real app, these would come from the Web Bluetooth API
+            const mockDevices = [
+                { name: '3D-Printer-1', address: '00:1A:7D:DA:71:13' },
+                { name: 'My3DPrinter', address: '00:1A:7D:DA:71:14' },
+                { name: 'CR-10S', address: '00:1A:7D:DA:71:15' }
+            ];
+            
+            if (mockDevices.length === 0) {
+                devicesEl.innerHTML = '<div class="empty">No devices found</div>';
+                return;
+            }
+            
+            mockDevices.forEach(device => {
+                const deviceEl = document.createElement('div');
+                deviceEl.className = 'device-item';
+                deviceEl.innerHTML = `
+                    <div class="device-info">
+                        <i class="fas fa-bluetooth-b"></i>
+                        <div>
+                            <div class="device-name">${device.name}</div>
+                            <div class="device-address">${device.address}</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm" onclick="selectDevice('${device.name}', '${device.address}')">
+                        Select
+                    </button>
+                `;
+                devicesEl.appendChild(deviceEl);
+            });
+        }, 1500);
+    });
+});
+
+// Global function to be called from inline onclick
+function selectDevice(name, address) {
+    document.getElementById('deviceName').value = name;
+    document.getElementById('deviceAddress').value = address;
+    document.getElementById('deviceAddress').focus();
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Trigger reflow
+    void notification.offsetWidth;
+    
+    notification.classList.add('show');
+    
+    // Auto-remove notification after delay
+    setTimeout(() => {
+        notification.classList.remove('show');
+        
+        // Remove from DOM after animation
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
+}
+</script>

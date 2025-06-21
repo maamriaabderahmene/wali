@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Mobile menu toggle functionality
+// Add this after sidebar and menu-toggle code is initialized
+
 function initMobileMenu() {
     const menuToggle = document.createElement('button');
     menuToggle.className = 'menu-toggle';
@@ -19,23 +21,39 @@ function initMobileMenu() {
     menuToggle.setAttribute('aria-label', 'Toggle menu');
     
     const sidebar = document.querySelector('.sidebar');
-    
+    // Add an overlay for menu on mobile
+    let sidebarOverlay = document.querySelector('.sidebar-overlay');
+    if (!sidebarOverlay) {
+        sidebarOverlay = document.createElement('div');
+        sidebarOverlay.className = 'sidebar-overlay';
+        document.body.appendChild(sidebarOverlay);
+    }
+
     menuToggle.addEventListener('click', function() {
         document.body.classList.toggle('menu-open');
         sidebar.classList.toggle('active');
+        sidebarOverlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
     });
-    
+
+    sidebarOverlay.addEventListener('click', function() {
+        sidebar.classList.remove('active');
+        document.body.classList.remove('menu-open');
+        sidebarOverlay.style.display = 'none';
+    });
+
     document.body.appendChild(menuToggle);
-    
-    // Close menu when clicking outside on mobile
-    document.addEventListener('click', function(event) {
-        const isClickInside = sidebar.contains(event.target) || menuToggle.contains(event.target);
-        
-        if (!isClickInside && window.innerWidth <= 992) {
+
+    // Close menu on resize if desktop
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 992) {
             sidebar.classList.remove('active');
             document.body.classList.remove('menu-open');
+            sidebarOverlay.style.display = 'none';
         }
     });
+}
+
+document.addEventListener('DOMContentLoaded', initMobileMenu);
     
     // Handle window resize
     let resizeTimer;
